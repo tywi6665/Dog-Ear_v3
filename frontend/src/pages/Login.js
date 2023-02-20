@@ -114,14 +114,14 @@ const Login = () => {
               span: 24,
             }}
           >
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <Text>
-                Need an account? <Link to="/signup">Sign Up</Link>
-              </Text>
-              <Text italic type="secondary">
+            {/* <div style={{ display: "flex", flexDirection: "column" }}> */}
+            <Text>
+              Need an account? <Link to="/signup">Sign Up</Link>
+            </Text>
+            {/* <Text italic type="secondary">
                 Made by tywi
               </Text>
-            </div>
+            </div> */}
           </Form.Item>
         </Form>
       </Content>
