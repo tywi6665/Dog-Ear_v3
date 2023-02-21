@@ -81,7 +81,11 @@ DJOSER = {
     "USER_ID_FIELD": "username"
 }
 
-CORS_ORIGIN_ALLOW_ALL = True
+# define which origins are allowed
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
 
 ROOT_URLCONF = 'server.urls'
 

@@ -6,21 +6,28 @@ import "./index.css";
 import store from "./store/index";
 import { Provider } from "react-redux";
 import App from "./App";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import Login from "./pages/login/Login";
+import Signup from "./pages/signup/Signup";
+import Catalog from "./pages/catalog/Catalog";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-  },
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/signup",
-    element: <Signup />,
+    children: [
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/signup",
+        element: <Signup />,
+      },
+      {
+        path: "/catalog",
+        element: <Catalog />,
+      },
+    ],
   },
 ]);
 

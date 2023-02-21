@@ -1,34 +1,41 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { login } from "../reducers/userSlice";
-import { Layout, Button, Form, Input, Typography } from "antd";
+import { login, logout } from "./LoginActions";
+import { Layout, Button, Form, Input, Typography, message } from "antd";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const dispatch = useDispatch();
   const [loginForm] = Form.useForm();
   const { Content } = Layout;
   const { Title, Text } = Typography;
+  const [messageApi, contextHolder] = message.useMessage();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const onFinish = (values) => {
-    dispatch(login(values));
-    // if (
-    //   values.username === "js.woodward@gmail.com" &&
-    //   values.password === "read2day"
-    // ) {
-    //   //   setCredentials(values);
-    // } else {
-    //   //   onFinishFailed();
+  const onFinish = (userData) => {
+    console.log(userData);
+    messageApi.destroy();
+    login(userData, "/catalog", navigate, dispatch, displayMessage);
+    // logout(navigate, dispatch, displayMessage);
     //   loginForm.resetFields();
-    // }
   };
 
   const onFinishFailed = (errorInfo) => {
-    // setCredentials({});
+    console.log("login failed");
+  };
+
+  const displayMessage = (message, type) => {
+    messageApi.open({
+      type: type,
+      content: message,
+      duration: 10,
+    });
   };
 
   return (
     <Layout id="layout" style={{ minHeight: "100%" }}>
+      {contextHolder}
       <Content
         style={{
           display: "flex",
@@ -55,7 +62,7 @@ const Login = () => {
           initialValues={{
             remember: true,
           }}
-          onFinish={(values) => onFinish(values)}
+          onFinish={(userData) => onFinish(userData)}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >

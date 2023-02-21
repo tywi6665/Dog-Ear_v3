@@ -1,21 +1,32 @@
-function App() {
+import React, { useEffect } from "react";
+import { Outlet } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { set_CurrentUser, set_Token } from "./pages/login/LoginActions";
+import { isEmpty } from "./utils/";
+
+const App = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // check localStorage
+    if (!isEmpty(localStorage.getItem("token"))) {
+      console.log(localStorage.getItem("token"));
+      set_Token(localStorage.getItem("token"), dispatch);
+    }
+    if (!isEmpty(localStorage.getItem("user"))) {
+      const user = JSON.parse(localStorage.getItem("user"));
+      console.log(user);
+      set_CurrentUser(user, "/catalog", navigate, dispatch);
+    }
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Outlet />
     </div>
   );
-}
+};
 
 export default App;
