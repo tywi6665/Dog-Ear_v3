@@ -21,6 +21,18 @@ html, #root {
   height: 100%;
 }
 
+#header {
+  div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    &:first-of-type {
+      width: 100%;
+    }
+  }
+}
+
 .log-in-title{
   height: 50px;
   display: flex;

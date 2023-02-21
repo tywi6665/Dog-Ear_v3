@@ -4,6 +4,8 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { set_CurrentUser, set_Token } from "./pages/login/LoginActions";
 import { isEmpty } from "./utils/";
+import { Layout } from "antd";
+import Navbar from "./components/Navbar";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -23,9 +25,10 @@ const App = () => {
   }, []);
 
   return (
-    <div className="App">
+    <Layout className="App">
+      <Navbar />
       <Outlet />
-    </div>
+    </Layout>
   );
 };
 

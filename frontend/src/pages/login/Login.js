@@ -68,15 +68,13 @@ const Login = () => {
         >
           <div className="log-in-title">
             <Title
+              level={2}
               style={{
                 margin: "5px",
               }}
             >
-              Dog-Ear
+              Please Log In
             </Title>
-            <div className="dog-image">
-              <img src="./static/graphics/dog.png" alt="Woof woof" />
-            </div>
           </div>
           <Form.Item
             label="Username"

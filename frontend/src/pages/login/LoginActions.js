@@ -77,10 +77,14 @@ export const logout = (navigate, dispatch, displayMessage) => {
     .then((res) => {
       unset_CurrentUser(dispatch);
       navigate("/login");
-      displayMessage("Logout successful.", "success");
+      if (displayMessage) {
+        displayMessage("Logout successful.", "success");
+      }
     })
     .catch((error) => {
       unset_CurrentUser(dispatch);
-      displayMessage(Object.values(error.response.data)[0], "error");
+      if (displayMessage) {
+        displayMessage(Object.values(error.response.data)[0], "error");
+      }
     });
 };

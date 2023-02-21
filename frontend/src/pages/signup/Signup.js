@@ -1,7 +1,7 @@
 import React from "react";
 import { Layout, Button, Form, Input, Typography, message } from "antd";
 import { Link } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { signupNewUser } from "./SignupAction";
 
 const Signup = () => {
@@ -79,15 +79,13 @@ const Signup = () => {
         >
           <div className="log-in-title">
             <Title
+              level={2}
               style={{
                 margin: "5px",
               }}
             >
-              Dog-Ear
+              Make an Account
             </Title>
-            <div className="dog-image">
-              <img src="./static/graphics/dog.png" alt="Woof woof" />
-            </div>
           </div>
           <Form.Item
             label="Username"
