@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 export default function requireAuth(Component) {
   const AuthenticatedComponent = () => {
-    console.log("here");
     const navigate = useNavigate();
     let location = useLocation();
     const isAuthenticated = useSelector((state) => state.login.isAuthenticated);

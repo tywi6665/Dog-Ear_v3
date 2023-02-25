@@ -35,6 +35,14 @@ const Navbar = () => {
         >
           Dog-Ear
         </Title>
+        <Title
+          level={3}
+          style={{
+            margin: "5px",
+          }}
+        >
+          Recipe Repository
+        </Title>
       </div>
       <div className="dog-image">
         {isAuthenticated ? (

@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { login, logout } from "./LoginActions";
+import { login } from "./LoginActions";
 import { Layout, Button, Form, Input, Typography, message } from "antd";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -68,7 +68,7 @@ const Login = () => {
         >
           <div className="log-in-title">
             <Title
-              level={2}
+              level={3}
               style={{
                 margin: "5px",
               }}

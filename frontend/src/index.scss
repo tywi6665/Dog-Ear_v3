@@ -27,9 +27,12 @@ html, #root {
     flex-direction: row;
     align-items: center;
 
-    &:first-of-type {
-      width: 100%;
-    }
+    // &:first-of-type {
+    //   width: 100%;
+    // }
+      img {
+        margin-left: 5px;
+      }
   }
 }
 
@@ -57,5 +60,209 @@ html, #root {
   &-active {
     background-color: #d32f2f !important;
     color: #fff !important;
+  }
+}
+
+.ant-card-cover {
+  // width: 100%;
+  max-width: 300px;
+  // width: 300px;
+  height: 200px;
+  overflow: hidden;
+
+  img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+}
+
+.ant-card-body {
+  height: 60px;
+  display: flex;
+  align-items: center;
+
+  .ant-card-meta-description {
+    color: rgba(0, 0, 0, 0.88) !important;
+    width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+.ant-float-btn-group-wrap {
+  button {
+    border: 1px #d32f2f solid;
+  }
+}
+
+.drawer-div {
+  width: 100%;
+  
+  img {
+    max-height: 550px;
+    max-width: 100%;
+    border-radius: 8px;
+  }
+
+  &-actions {
+    justify-content: space-around !important;
+    margin-bottom: 1em;
+  } 
+
+  div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    button {
+      margin-bottom: 1em;
+    }
+  }
+}
+
+.btn {
+  background-color: transparent !important;
+  color: #d32f2f !important;
+  border-color: #d32f2f !important;
+
+  &-active {
+    background-color: #d32f2f !important;
+    color: #fff !important;
+  }
+}
+
+.ant-tabs-tab {
+  &:hover {
+    color: #d32f2f !important;
+  }
+}
+
+.ant-tabs-tab-active {
+  .ant-tabs-tab-btn {
+    color: #d32f2f !important;
+  }
+}
+
+.ant-tabs-ink-bar {
+  background: #d32f2f !important;
+}
+
+.ant-tag {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.tag-input {
+  width: fit-content;
+  // max-width: 100px;
+  margin-right: 8px;
+  vertical-align: top;
+}
+
+#new-tag-form {
+  display: flex;
+  
+  .tag-input {
+    margin-top: 4px;
+    margin-right: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .btn-active {
+    margin-top: 4px;
+    height: 24px;
+    padding: 0 10px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+#recipe-entry, #recipe-edit {
+  .ant-space-item {
+    width: 100%;
+    text-align: center;
+    // &:nth-child(2) {
+    //   text-align: center;
+    // }
+  }
+
+  img {
+    margin: 0 auto 15px auto;
+    width: 225px;
+     height: 225px;
+     object-fit: cover;
+    border-radius: 8px;
+  }
+}
+
+#recipe-edit {
+  .ant-space-item:nth-child(2) {
+    .ant-form-item:nth-child(7) {
+       .ant-col:nth-child(2) {
+        flex: 1 1 230px
+       }
+    }
+  }
+}
+
+#recipe-entry {
+  .ant-space-item:nth-child(2) {
+    .ant-form-item:nth-child(7) {
+       .ant-col:nth-child(2) {
+        flex: 1 1 210px !important;
+       }
+    }
+  }
+}
+
+#new-note-textarea {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#new-note-button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.dog-loader {
+  width: 100px;
+  height: 100px;
+  margin: 15px auto 50px auto;
+  text-align: center;
+
+  .dog-head {
+    z-index: 100;
+    animation: head-move 1s ease-in-out infinite;
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .dog-body {
+    height: 100%;
+    width: 100%;
+    margin: -62px auto 10px auto;
+    background-image: url("http://www.clker.com/cliparts/T/0/9/J/e/4/dog-body-md.png");
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+}
+
+.dog-loader-p {
+  text-align: center;
+}
+
+@keyframes head-move {
+  50% {
+    transform: rotate(-10.5deg);
   }
 }

@@ -31,8 +31,8 @@ html, #root {
           align-items: center;
 }
 
-#header div:first-of-type {
-  width: 100%;
+#header div img {
+  margin-left: 5px;
 }
 
 .log-in-title {
@@ -66,5 +66,216 @@ html, #root {
 .btn-active {
   background-color: #d32f2f !important;
   color: #fff !important;
+}
+
+.ant-card-cover {
+  max-width: 300px;
+  height: 200px;
+  overflow: hidden;
+}
+
+.ant-card-cover img {
+  height: 100%;
+  width: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+.ant-card-body {
+  height: 60px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.ant-card-body .ant-card-meta-description {
+  color: rgba(0, 0, 0, 0.88) !important;
+  width: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ant-float-btn-group-wrap button {
+  border: 1px #d32f2f solid;
+}
+
+.drawer-div {
+  width: 100%;
+}
+
+.drawer-div img {
+  max-height: 550px;
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.drawer-div-actions {
+  -ms-flex-pack: distribute !important;
+      justify-content: space-around !important;
+  margin-bottom: 1em;
+}
+
+.drawer-div div {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.drawer-div div button {
+  margin-bottom: 1em;
+}
+
+.btn {
+  background-color: transparent !important;
+  color: #d32f2f !important;
+  border-color: #d32f2f !important;
+}
+
+.btn-active {
+  background-color: #d32f2f !important;
+  color: #fff !important;
+}
+
+.ant-tabs-tab:hover {
+  color: #d32f2f !important;
+}
+
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #d32f2f !important;
+}
+
+.ant-tabs-ink-bar {
+  background: #d32f2f !important;
+}
+
+.ant-tag {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.tag-input {
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  margin-right: 8px;
+  vertical-align: top;
+}
+
+#new-tag-form {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+#new-tag-form .tag-input {
+  margin-top: 4px;
+  margin-right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#new-tag-form .btn-active {
+  margin-top: 4px;
+  height: 24px;
+  padding: 0 10px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+#recipe-entry .ant-space-item, #recipe-edit .ant-space-item {
+  width: 100%;
+  text-align: center;
+}
+
+#recipe-entry img, #recipe-edit img {
+  margin: 0 auto 15px auto;
+  width: 225px;
+  height: 225px;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border-radius: 8px;
+}
+
+#recipe-edit .ant-space-item:nth-child(2) .ant-form-item:nth-child(7) .ant-col:nth-child(2) {
+  -webkit-box-flex: 1;
+      -ms-flex: 1 1 230px;
+          flex: 1 1 230px;
+}
+
+#recipe-entry .ant-space-item:nth-child(2) .ant-form-item:nth-child(7) .ant-col:nth-child(2) {
+  -webkit-box-flex: 1 !important;
+      -ms-flex: 1 1 210px !important;
+          flex: 1 1 210px !important;
+}
+
+#new-note-textarea {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#new-note-button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.dog-loader {
+  width: 100px;
+  height: 100px;
+  margin: 15px auto 50px auto;
+  text-align: center;
+}
+
+.dog-loader .dog-head {
+  z-index: 100;
+  -webkit-animation: head-move 1s ease-in-out infinite;
+          animation: head-move 1s ease-in-out infinite;
+}
+
+.dog-loader .dog-head img {
+  width: 100%;
+  height: 100%;
+}
+
+.dog-loader .dog-body {
+  height: 100%;
+  width: 100%;
+  margin: -62px auto 10px auto;
+  background-image: url("http://www.clker.com/cliparts/T/0/9/J/e/4/dog-body-md.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dog-loader-p {
+  text-align: center;
+}
+
+@-webkit-keyframes head-move {
+  50% {
+    -webkit-transform: rotate(-10.5deg);
+            transform: rotate(-10.5deg);
+  }
+}
+
+@keyframes head-move {
+  50% {
+    -webkit-transform: rotate(-10.5deg);
+            transform: rotate(-10.5deg);
+  }
 }
 /*# sourceMappingURL=index.css.map */

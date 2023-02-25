@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { set_CurrentUser, set_Token } from "./pages/login/LoginActions";
 import { isEmpty } from "./utils/";
 import { Layout } from "antd";
@@ -10,6 +10,7 @@ import Navbar from "./components/Navbar";
 const App = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  let location = useLocation();
 
   useEffect(() => {
     // check localStorage
@@ -19,8 +20,20 @@ const App = () => {
     }
     if (!isEmpty(localStorage.getItem("user"))) {
       const user = JSON.parse(localStorage.getItem("user"));
-      console.log(user);
-      set_CurrentUser(user, "/catalog", navigate, dispatch);
+      console.log(user, location);
+      let redirectTo;
+      // if (
+      //   location.pathname === "/signup" ||
+      //   location.pathname === "/login" ||
+      //   location.pathname === "/"
+      // ) {
+      redirectTo = "/catalog";
+      // } else {
+      //   redirectTo = location.pathname;
+      // }
+      set_CurrentUser(user, redirectTo, navigate, dispatch);
+    } else {
+      navigate("/login");
     }
   }, []);
 

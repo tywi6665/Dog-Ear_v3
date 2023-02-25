@@ -79,7 +79,7 @@ const Signup = () => {
         >
           <div className="log-in-title">
             <Title
-              level={2}
+              level={3}
               style={{
                 margin: "5px",
               }}
