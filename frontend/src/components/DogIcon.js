@@ -2,13 +2,7 @@ export const DogIcon = () => {
   return (
     <span>
       <svg
-        style={{
-          position: "absolute",
-          top: "10px",
-          right: "8px",
-          width: "24px",
-          height: "24px",
-        }}
+        className="absolute top-[10px] right-[8px] w-[24px] h-[24px]"
         viewBox="0 0 24 24"
       >
         <path

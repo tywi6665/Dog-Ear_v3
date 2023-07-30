@@ -3,6 +3,7 @@ import loginSlice from "../reducers/loginSlice";
 import catalogSlice from "../reducers/catalogSlice";
 import signupSlice from "../reducers/signupSlice";
 import recipeSlice from "../reducers/recipeSlice";
+import scrapedRecipeSlice from "../reducers/scrapedRecipeSlice";
 
 export default configureStore({
   reducer: {
@@ -10,5 +11,6 @@ export default configureStore({
     login: loginSlice,
     catalog: catalogSlice,
     recipe: recipeSlice,
+    scrapedRecipe: scrapedRecipeSlice,
   },
 });

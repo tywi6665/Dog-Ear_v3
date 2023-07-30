@@ -3,14 +3,25 @@ import {
   getRecipes,
   addRecipe,
   getSearchOptions,
+  setSearchQuery,
+  getDuplicates,
+  setSortBy,
+  // setRetrievedData,
 } from "../../reducers/catalogSlice";
 
-export const get_Recipes = (dispatch, displayMessage) => {
+export const get_Recipes = (dispatch, sortBy, displayMessage) => {
+  let url = "";
+  if (sortBy === "-timestamp" || sortBy === "timestamp") {
+    url = `/api/v1/recipes/?ordering=${sortBy}`;
+  } else {
+    url = `/api/v1/recipes/?ordering=${sortBy},-timestamp`;
+  }
   axios
-    .get("/api/v1/recipes/")
+    .get(url)
     .then((res) => {
       dispatch(getRecipes(res.data));
       get_SearchOptions(res.data, dispatch);
+      // dispatch(setRetrievedData(true));
     })
     .catch((error) => {
       displayMessage(Object.values(error.response.data)[0], "error"); // raise message error
@@ -31,42 +42,17 @@ export const add_Recipe = (recipe, dispatch, displayMessage) => {
 };
 
 export const get_SearchOptions = (recipes, dispatch) => {
-  let arr = {
-    tags: [],
-    allOptions: [],
-  };
-  recipes.forEach((recipe) => {
-    let tags = recipe.tags;
-    let cleanedTitle = recipe.title.trim();
-    tags.forEach((tag) => {
-      if (tag.length) {
-        let cleanedTag = tag.toLowerCase().trim();
-        if (!arr.tags.includes(cleanedTag)) {
-          arr.tags.push(cleanedTag);
-        }
-        if (!arr.allOptions.includes(cleanedTag)) {
-          arr.allOptions.push(cleanedTag);
-        }
-      }
-    });
-    if (!arr.allOptions.includes(cleanedTitle)) {
-      arr.allOptions.push(cleanedTitle);
-    }
-  });
-  let options = arr.tags.map((option) => {
-    if (option.length) {
-      // const firstLetter = option[0].toUpperCase();
-      option = option.split(" ").map(function (word) {
-        return word.replace(word[0], word[0].toUpperCase());
-      });
-      return {
-        title: option[0],
-        key: option[0],
-        value: option[0],
-      };
-    }
-  });
-  arr.tags = options;
-  arr.allOptions.sort();
-  dispatch(getSearchOptions(arr));
+  dispatch(getSearchOptions(recipes));
+};
+
+export const set_SearchQuery = (query, dispatch) => {
+  dispatch(setSearchQuery(query));
+};
+
+export const get_Duplicates = (query, dispatch) => {
+  dispatch(getDuplicates(query));
+};
+
+export const set_SortBy = (query, dispatch) => {
+  dispatch(setSortBy(query));
 };

@@ -18,7 +18,7 @@ const RecipeCard = ({ recipe }) => {
       {recipe.has_made ? (
         <Badge.Ribbon text="Cooked" color="#d32f2f">
           <Card
-            style={{ maxWidth: "300px", width: "100%" }}
+            className="max-w-[300px] w-full"
             hoverable
             onClick={() => {
               navigate(`recipe/${recipe.id}`);
@@ -39,7 +39,7 @@ const RecipeCard = ({ recipe }) => {
         </Badge.Ribbon>
       ) : (
         <Card
-          style={{ maxWidth: "300px", width: "100%" }}
+          className="max-w-[300px] w-full"
           hoverable
           onClick={() => {
             navigate(`recipe/${recipe.id}`);

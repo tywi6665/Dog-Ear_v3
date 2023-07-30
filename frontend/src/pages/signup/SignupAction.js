@@ -1,23 +1,35 @@
 import axios from "axios";
+import { login } from "../login/LoginActions";
 import {
   createUserSubmitted,
   createUserError,
   createUserSuccess,
 } from "../../reducers/signupSlice";
+import { add_Recipe } from "../catalog/CatalogActions";
+import { v4 as uuidv4 } from "uuid";
 
-export const signupNewUser = (userData, dispatch, displayMessage) => {
+export const signupNewUser = (
+  userData,
+  dispatch,
+  navigate,
+  displayMessage,
+  setStatus
+) => {
   dispatch(createUserSubmitted());
   axios
     .post("api/v1/users/", userData)
     .then((res) => {
       console.log(res);
       displayMessage(
-        `Account for ${userData.username} created successfully. Please login.`,
+        `Account for ${userData.username} created successfully. Welcome.`,
         "success"
       );
+      setStatus("success");
       dispatch(createUserSuccess());
+      // login(userData, "/catalog", navigate, dispatch, displayMessage);
     })
     .catch((error) => {
+      setStatus("error");
       if (error.response) {
         console.log("here");
         // The request was made and the server responded with a status code

@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { get_Recipes, add_Recipe } from "./CatalogActions";
-import requireAuth from "../../utils/RequireAuth";
+import { useSelector } from "react-redux";
+import {
+  get_Recipes,
+  add_Recipe,
+  set_SearchQuery,
+  set_SortBy,
+} from "./CatalogActions";
+import { clear_Recipe } from "../recipe/RecipeActions";
+import { set_ScrapedRecipe } from "../entry/EntryActions";
+import RequireAuth from "../../utils/RequireAuth";
 import RecipeCard from "../../components/RecipeCard";
-import RecipeEntry from "../../components/RecipeEntry";
+import RecipeEntry from "../entry/Entry";
 import { DogIcon } from "../../components/DogIcon";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -11,44 +18,46 @@ import {
   Col,
   Row,
   Space,
+  Select,
+  AutoComplete,
   Spin,
   FloatButton,
-  Modal,
-  message,
+  Result,
+  Typography,
 } from "antd";
-import {
-  PlusOutlined,
-  PlusCircleOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  QuestionCircleOutlined,
-} from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 
-const Catalog = () => {
-  const dispatch = useDispatch();
+const Catalog = RequireAuth(({ dispatch, displayMessage }) => {
   const { Header, Content } = Layout;
-  const [messageApi, contextHolder] = message.useMessage();
+  const { Paragraph } = Typography;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [entryType, setEntryType] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const recipes = useSelector((state) => state.catalog.recipes);
+  const filteredRecipes = useSelector((state) => state.catalog.filteredRecipes);
+  const allOptions = useSelector(
+    (state) => state.catalog.searchOptions.allOptions
+  );
+  const searchQuery = useSelector((state) => state.catalog.searchQuery);
+  const sortBy = useSelector((state) => state.catalog.sortBy);
+  const hasRetrievedData = useSelector(
+    (state) => state.catalog.hasRetrievedData
+  );
 
   useEffect(() => {
-    get_Recipes(dispatch, displayMessage);
-  }, []);
+    get_Recipes(dispatch, sortBy, displayMessage);
+    clear_Recipe(dispatch);
+    if (searchQuery) {
+      set_SearchQuery("", dispatch);
+    }
+  }, [recipes.length, sortBy]);
 
   const handleAddRecipe = (recipe) => {
     recipe.unique_id = uuidv4();
     add_Recipe(recipe, dispatch, displayMessage);
+    set_ScrapedRecipe({}, dispatch);
     closeModal();
-  };
-
-  const displayMessage = (message, type) => {
-    messageApi.open({
-      type: type,
-      content: message,
-      duration: 3,
-    });
   };
 
   // Modal Functions
@@ -60,130 +69,186 @@ const Catalog = () => {
 
   const closeModal = () => {
     document.body.style.overflow = "unset";
+    // set_ScrapedRecipe({}, dispatch);
+    // setIsSubmitted(false);
     setIsModalOpen(false);
-    setEntryType("");
+    // setEntryType("");
   };
 
   return (
-    <>
-      <Layout id="layout" style={{ minHeight: "100%" }}>
-        {contextHolder}
-        <Content
-          style={{
-            margin: "15px",
-          }}
-        >
+    <Content>
+      <Layout className="min-h-full pb-[50px]">
+        <Header className="sticky top-0 flex justify-between items-center !bg-white !p-2.5 border-b border-[#d32f2f] z-[1]">
+          <div className="w-6/12">
+            <Select
+              className="max-w-full w-[200px]"
+              labelInValue
+              bordered={false}
+              defaultValue={{ value: "Newest", label: "Newest" }}
+              value={{ value: sortBy }}
+              onChange={(value) => set_SortBy(value.value, dispatch)}
+              options={[
+                {
+                  value: "-timestamp",
+                  label: "Newest",
+                },
+                {
+                  value: "timestamp",
+                  label: "Oldest",
+                },
+                {
+                  value: "-rating",
+                  label: "Highest Rated",
+                },
+                {
+                  value: "title",
+                  label: "Title A-Z",
+                },
+                {
+                  value: "-title",
+                  label: "Title Z-A",
+                },
+                {
+                  value: "-has_made",
+                  label: "Has Been Cooked",
+                },
+                {
+                  value: "has_made",
+                  label: "Has NOT Been Cooked",
+                },
+              ]}
+            />
+          </div>
+          <div className="w-6/12 text-right">
+            <AutoComplete
+              className="max-w-full w-[200px] text-left"
+              onSelect={(value) => set_SearchQuery(value, dispatch)}
+              onSearch={(value) => set_SearchQuery(value, dispatch)}
+              allowClear
+              value={searchQuery}
+              placeholder="Search Recipes"
+              options={
+                allOptions
+                  ? allOptions.map((option) => {
+                      return {
+                        value: option,
+                        label: option,
+                      };
+                    })
+                  : ""
+              }
+            />
+          </div>
+        </Header>
+        <Content className="m-[15px]">
           <Row
             justify="space-around"
             xs="auto"
             gutter={[16, 16]}
             key={uuidv4()}
           >
-            {recipes.length ? (
-              recipes.map((recipe, i) => (
+            {filteredRecipes.length ? (
+              filteredRecipes.map((recipe, i) => (
                 <Col
-                  flex
                   xs={{ span: 12, offset: 0 }}
                   md={{ span: 8, offset: 0 }}
                   lg={{ span: 6, offset: 0 }}
                   xl={{ span: 4, offset: 0 }}
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                  }}
+                  className="flex justify-center w-full"
                   key={uuidv4()}
                 >
-                  <RecipeCard
-                    recipe={recipe}
-                    //   recipeNumber={i}
-                    //   quickTagOptions={searchOptions.tags}
-                    //   updateRecipe={handleUpdate}
-                    //   setFocusedRecipe={setFocusedRecipe}
-                    //   showDrawer={showDrawer}
-                    key={uuidv4()}
-                  />
+                  <RecipeCard recipe={recipe} key={uuidv4()} />
                 </Col>
               ))
+            ) : recipes.length && !filteredRecipes.length ? (
+              <Space
+                direction="vertical"
+                className="w-full text-center mt-[50px] mb-[15px]"
+              >
+                <Result
+                  className="m-auto bg-white w-[300px] p-4 border border-solid border-neutral-200 rounded-lg"
+                  title="There are no recipes that match the search term"
+                  extra={[
+                    <Paragraph>
+                      <em>
+                        <strong>{searchQuery}</strong>
+                      </em>
+                      ...
+                    </Paragraph>,
+                  ]}
+                />
+              </Space>
             ) : (
               <Space
                 direction="vertical"
-                style={{ width: "100%", marginTop: "50px" }}
+                className="w-full text-center mt-[50px] mb-[15px]"
               >
-                <Spin tip="Loading" size="large">
-                  <div className="content" />
-                </Spin>
+                {hasRetrievedData && !recipes.length ? (
+                  <Result
+                    className="m-auto bg-white w-[300px] p-4 border border-solid border-neutral-200 rounded-lg"
+                    title="You haven't saved any recipes yet."
+                    extra={[
+                      <Paragraph>
+                        Use the blue button in the lower right-hand corner to
+                        add a recipe.
+                      </Paragraph>,
+                    ]}
+                  />
+                ) : (
+                  <Spin tip="Loading" size="large">
+                    <div className="content" />
+                  </Spin>
+                )}
               </Space>
             )}
           </Row>
-          <Row>
-            {recipes ? (
-              <p style={{ margin: "25px auto" }}>
-                <em>You have saved {recipes.length} recipes to date!</em>
-              </p>
-            ) : null}
-          </Row>
           <FloatButton.Group
             icon={<PlusCircleOutlined />}
-            style={{ bottom: "85px" }}
+            className="bottom-[105px]"
             type="primary"
             trigger="click"
           >
             <FloatButton
               icon={<DogIcon />}
-              //   onClick={() => showModal("crawl")}
+              onClick={() => showModal("scrape")}
               tooltip={<div>Scrape a Recipe</div>}
             />
             <FloatButton
-              onClick={(e) => [
-                // setIsSubmitted(true),
-                showModal("blank"),
-                // connect("blank"),
-              ]}
+              onClick={(e) => [setIsSubmitted(true), showModal("blank")]}
               tooltip={<div>Blank Template</div>}
             />
           </FloatButton.Group>
           <FloatButton.BackTop
-            style={{ bottom: "25px" }}
+            className="bottom-[55px]"
             tooltip={<div>Back to Top</div>}
           />
         </Content>
       </Layout>
-      <Modal
-        title={"Blank Recipe Template"}
-        closable
-        destroyOnClose
-        footer={null}
-        style={{ top: 20 }}
-        open={isModalOpen}
-        onCancel={() => [closeModal()]}
-      >
-        <div>
-          <RecipeEntry
-            //   recipe={crawledRecipe}
-            //   key={crawledRecipe.unique_id}
-            //   unique_id={crawledRecipe.unique_id}
-            //   url={url}
-            //   setRecipe={setCrawledRecipe}
-            //   setIsSubmitted={setIsSubmitted}
-            //   handleCreate={handleCreate}
-            //   // handleImageUpload={handleImageUpload}
-            //   // handleImageDelete={handleImageDelete}
-            //   handleDelete={handleDelete}
-            //   setUrl={setUrl}
-            //   quickTagOptions={searchOptions.tags}
-            handleAddRecipe={handleAddRecipe}
-            type={entryType}
-            setType={setEntryType}
-            closeModal={closeModal}
-            // isUploading={isUploading}
-            // setIsUploading={setIsUploading}
-            // imageName={imageName}
-            // setImageName={setImageName}
-          />
-        </div>
-      </Modal>
-    </>
+      {entryType ? (
+        <RecipeEntry
+          dispatch={dispatch}
+          displayMessage={displayMessage}
+          isSubmitted={isSubmitted}
+          setIsSubmitted={setIsSubmitted}
+          //   handleCreate={handleCreate}
+          //   handleImageUpload={handleImageUpload}
+          //   handleImageDelete={handleImageDelete}
+          //   handleDelete={handleDelete}
+          //   setUrl={setUrl}
+          //   quickTagOptions={searchOptions.tags}
+          handleAddRecipe={handleAddRecipe}
+          entryType={entryType}
+          setEntryType={setEntryType}
+          isModalOpen={isModalOpen}
+          closeModal={closeModal}
+          // isUploading={isUploading}
+          // setIsUploading={setIsUploading}
+          // imageName={imageName}
+          // setImageName={setImageName}
+        />
+      ) : null}
+    </Content>
   );
-};
+});
 
-export default requireAuth(Catalog);
+export default Catalog;

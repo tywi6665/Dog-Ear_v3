@@ -1,4 +1,3 @@
-import uuid
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -16,7 +15,7 @@ class RecipeItem(models.Model):
     notes = models.JSONField(default=list)
     rating = models.IntegerField(default=0)
     tags = models.JSONField(default=list)
-    ingredients = models.TextField(max_length=None, default="", blank=True)
-    steps = models.TextField(max_length=None, default="", blank=True)
+    ingredients = models.TextField(max_length=None, default='[{"header":"","content":[]}]', blank=True)
+    steps = models.TextField(max_length=None, default='[{"header":"","content":[]}]', blank=True)
     timestamp = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)

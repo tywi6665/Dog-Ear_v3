@@ -12,7 +12,9 @@ export const login = (
   navigate,
   dispatch,
   displayMessage
+  // callback
 ) => {
+  console.log(userData);
   axios
     .post("/api/v1/token/login/", userData) // post to login REST API
     .then((response) => {
@@ -43,8 +45,16 @@ export const getCurrentUser = (
       set_CurrentUser(user, redirectTo, navigate, dispatch);
     })
     .catch((error) => {
-      dispatch(unsetCurrentUser());
-      displayMessage(Object.values(error.response.data)[0], "error");
+      unset_CurrentUser(dispatch);
+      if (error.response) {
+        if (
+          Object.values(error.response.data)[0] === "User inactive or deleted."
+        ) {
+          navigate("/resend_activation");
+        }
+      } else {
+        displayMessage(Object.values(error.response.data)[0], "error");
+      }
     });
 };
 

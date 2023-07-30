@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 
-export default function requireAuth(Component) {
-  const AuthenticatedComponent = () => {
+const RequireAuth = (Component) => {
+  const AuthenticatedComponent = (props) => {
     const navigate = useNavigate();
     let location = useLocation();
     const isAuthenticated = useSelector((state) => state.login.isAuthenticated);
@@ -22,8 +22,12 @@ export default function requireAuth(Component) {
       }
     };
 
-    return <div>{isAuthenticated === true ? <Component /> : null}</div>;
+    return (
+      <div>{isAuthenticated === true ? <Component {...props} /> : null}</div>
+    );
   };
 
   return AuthenticatedComponent;
-}
+};
+
+export default RequireAuth;

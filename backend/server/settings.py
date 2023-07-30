@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import os
-from dotenv import load_dotenv
+import environ
 from pathlib import Path
 import django_on_heroku
 
@@ -20,21 +20,39 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 FRONTEND_DIR = os.path.join(BASE_DIR.parent, 'frontend')
 
-dotenv_file = os.path.join(BASE_DIR, ".env")
-if os.path.isfile(dotenv_file):
-   load_dotenv(dotenv_file)
+env = environ.Env()
+# reading .env file
+env_file = os.path.join(BASE_DIR, ".env")
+environ.Env.read_env(env_file)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
+SECRET_KEY = env('SECRET_KEY')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-h-sndjw9srvn4hu#@b^&$q526z-oc0bx)7o%66-vomvb299w3-'
+APP_DOMAIN = env("APP_DOMAIN", default="http://localhost:8000")
+
+# FILE_UPLOAD_STORAGE = env("FILE_UPLOAD_STORAGE", default="local")  # local | s3
+
+# if FILE_UPLOAD_STORAGE == "local":
+    # MEDIA_ROOT_NAME = "media"
+    # MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_ROOT_NAME)
+    # MEDIA_URL = f"/{MEDIA_ROOT_NAME}/"
+
+# if FILE_UPLOAD_STORAGE == "s3":
+    # Using django-storages
+    # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    # AWS_S3_ACCESS_KEY_ID = env('AWS_S3_ACCESS_KEY_ID')
+    # AWS_S3_SECRET_ACCESS_KEY = env('AWS_S3_SECRET_ACCESS_KEY')
+    # AWS_S3_BUCKET_NAME = env('AWS_S3_BUCKET_NAME')
+    # AWS_S3_SIGNATURE_VERSION = 's3v4'
+    # AWS_S3_REGION_NAME = env('AWS_S3_REGION_NAME')
+    # AWS_S3_FILE_OVERWRITE = False
+    # AWS_S3_VERIFY = True
+    # AWS_DEFAULT_ACL = env("AWS_DEFAULT_ACL", default="public-read")
+    # AWS_PRESIGNED_EXPIRY = env.int("AWS_PRESIGNED_EXPIRY", default=10)  # seconds
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -48,10 +66,14 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_filters',
     'djoser',
     'corsheaders',
+    # 'storages',
     'apps.accounts',
-    'apps.recipes'
+    'apps.recipes',
+    'apps.scraper',
+    # 'apps.upload',
 ]
 
 MIDDLEWARE = [
@@ -79,8 +101,25 @@ REST_FRAMEWORK = {
 
 # configure Djoser
 DJOSER = {
-    "USER_ID_FIELD": "username"
+    "USER_ID_FIELD": "username",
+    "LOGIN_FIELD": "email",
+    "SEND_ACTIVATION_EMAIL": True,
+    "ACTIVATION_URL": "activate/{uid}/{token}",
+    "PASSWORD_RESET_CONFIRM_URL": "reset_password/{uid}/{token}",
+    'SERIALIZERS': {
+        'activation': 'djoser.serializers.ActivationSerializer',
+        'token_create': 'apps.accounts.serializers.CustomTokenCreateSerializer',
+    }
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+SITE_NAME = "Dog-Ear Recipe Repository"
+
+PROTOCOL = "http"
+DOMAIN = "localhost:3000"
+if not DEBUG:
+    PROTOCOL = "https"
+    DOMAIN = ""
 
 # define which origins are allowed
 CORS_ALLOWED_ORIGINS = [
@@ -159,17 +198,47 @@ USE_TZ = True
 # django_on_heroku.settings(locals())
 
 # # Place static in the same location as webpack build files
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'django_static')
 
-STATIC_URL = '/static/'
+STATIC_URL = '/django_static/'
 
-STATICFILES_DIRS = [
-    os.path.join(FRONTEND_DIR, 'build', 'static'),
-]
+# STATICFILES_DIRS = [
+#     os.path.join(FRONTEND_DIR, 'build', 'static'),
+# ]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'default': {
+#             'format': '[DJANGO] %(levelname)s %(asctime)s %(module)s '
+#                       '%(name)s.%(funcName)s:%(lineno)s: %(message)s'
+#         },
+#     },
+#     'handlers': {
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'default',
+#         }
+#     },
+#     'loggers': {
+#         '': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#             'propagate': False,
+#         }
+#     },
+# }

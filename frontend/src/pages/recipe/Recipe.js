@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
-import requireAuth from "../../utils/RequireAuth";
+import React, { useState, useEffect } from "react";
+import RequireAuth from "../../utils/RequireAuth";
 import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import { get_Recipe, delete_Recipe } from "./RecipeActions";
+import { get_Recipe, patch_Recipe, delete_Recipe } from "./RecipeActions";
 import {
   Layout,
   Space,
@@ -17,44 +17,46 @@ import {
   Input,
   Tag,
   Form,
-  Popconfirm,
-  Radio,
+  Modal,
   Spin,
   Dropdown,
-  message,
+  Row,
+  Col,
 } from "antd";
 import {
   EditOutlined,
   DeleteOutlined,
-  QuestionCircleOutlined,
+  PlusOutlined,
+  ExclamationCircleFilled,
+  SettingOutlined,
+  ArrowLeftOutlined,
+  CheckOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 import { titleCase } from "../../utils";
+// import { parse } from "recipe-ingredient-parser-v3";
 
-const Recipe = () => {
-  const [messageApi, contextHolder] = message.useMessage();
+const Recipe = RequireAuth(({ dispatch, displayMessage }) => {
   const recipe = useSelector((state) => state.recipe.recipe);
-  let params = useParams();
+  const [inputVisible, setInputVisible] = useState(false);
+  const [tagForm] = Form.useForm();
+  const [noteForm] = Form.useForm();
+  let tagFormValue = Form.useWatch("newTag", tagForm);
+  let noteFormValue = Form.useWatch("newNote", noteForm);
+  let { id } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { Title, Text, Link } = Typography;
+  const { Title, Paragraph, Text, Link } = Typography;
   const { Header, Content } = Layout;
-  console.log(recipe);
+  const { confirm } = Modal;
+  // console.log(recipe);
 
   useEffect(() => {
-    get_Recipe(params.id, dispatch, displayMessage);
+    get_Recipe(id, dispatch, displayMessage);
   }, []);
-
-  const displayMessage = (message, type) => {
-    messageApi.open({
-      type: type,
-      content: message,
-      duration: 3,
-    });
-  };
 
   // Tab Functions
   const changeTab = (key) => {
-    console.log(key);
+    return;
   };
 
   // Dropdown Functions
@@ -72,12 +74,26 @@ const Recipe = () => {
     },
   ];
 
+  const showDeleteConfirm = () => {
+    confirm({
+      title: "Are you sure delete this recipe?",
+      icon: <ExclamationCircleFilled />,
+      content: "",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk() {
+        delete_Recipe(recipe.id, navigate, displayMessage);
+      },
+      onCancel() {},
+    });
+  };
+
   const handleMenuClick = (e) => {
-    console.log(e.key);
     if (e.key === "1") {
       navigate("edit");
     } else {
-      delete_Recipe(recipe.id, navigate, displayMessage);
+      showDeleteConfirm();
     }
   };
 
@@ -86,78 +102,110 @@ const Recipe = () => {
     onClick: handleMenuClick,
   };
 
+  const handleInputConfirm = (newTag) => {
+    if (recipe.tags.indexOf(titleCase(newTag)) === -1) {
+      patch_Recipe(
+        recipe.id,
+        { tags: [...recipe.tags, titleCase(newTag)] },
+        dispatch,
+        displayMessage
+      );
+      setInputVisible(false);
+    } else {
+      displayMessage(`This recipe already has the ${newTag} tag`, "error");
+    }
+  };
+
+  const showInput = () => {
+    setInputVisible(true);
+  };
+
+  const addNote = (newNote) => {
+    if (noteFormValue) {
+      patch_Recipe(
+        recipe.id,
+        { notes: [...recipe.notes, newNote] },
+        dispatch,
+        displayMessage
+      );
+      noteForm.resetFields();
+    }
+  };
+
+  const generateTimeline = (items, type) => {
+    items = JSON.parse(items);
+    console.log(items);
+    if (!items[0].content.length) {
+      return (
+        <Timeline>
+          <Timeline.Item color="#d32f2f">
+            <Paragraph italic>
+              This recipe has no {type} assigned to it
+            </Paragraph>
+          </Timeline.Item>
+        </Timeline>
+      );
+    } else {
+      return items.map((item) => {
+        if (item.header.length) {
+          return (
+            <React.Fragment key={uuidv4()}>
+              <Paragraph strong italic className="!my-5">
+                {item.header}
+              </Paragraph>
+              <Timeline>
+                {item.content.map((el) => {
+                  // console.log(parse(el, "eng"));
+                  return (
+                    <Timeline.Item color="#d32f2f" key={uuidv4()}>
+                      <Text>{el}</Text>
+                    </Timeline.Item>
+                  );
+                })}
+              </Timeline>
+            </React.Fragment>
+          );
+        } else {
+          return (
+            <Timeline key={uuidv4()}>
+              {item.content.map((el) => {
+                return (
+                  <Timeline.Item color="#d32f2f" key={uuidv4()}>
+                    <Text>{el}</Text>
+                  </Timeline.Item>
+                );
+              })}
+            </Timeline>
+          );
+        }
+      });
+    }
+  };
+
   return Object.keys(recipe).length ? (
-    <Layout id="recipe-layout">
-      {contextHolder}
-      <Content
-        style={{
-          backgroundColor: "#f5f5f5",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "10px",
-          margin: "15px 0",
-          textAlign: "center",
-        }}
-      >
-        <Title level={2} style={{ marginBottom: "5px" }}>
-          {recipe.title}
-        </Title>
-        <Text>
-          <strong>Author: </strong>
-          <em>{recipe.author ? recipe.author : "No Assigned Author"}</em>
-        </Text>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "20px",
-          }}
-        >
-          <Button
-            type={recipe.has_made ? "primary" : "default"}
-            className={recipe.has_made ? "btn-active" : "btn"}
-            // onClick={(e) =>
-            //   handleUpdate(
-            //     "has_made",
-            //     recipe.unique_id,
-            //     recipe.has_made,
-            //     updaterecipe
-            //   )
-            // }
-            danger
-            shape="round"
+    <Layout className="w-full pt-0 pb-20">
+      <Content>
+        <Row className="w-full">
+          <Col
+            className="flex justify-center items-center flex-col gap-2.5"
+            xs={{ span: 24, offset: 0 }}
+            sm={{ span: 22, offset: 1 }}
+            md={{ span: 20, offset: 2 }}
+            lg={{ span: 18, offset: 3 }}
           >
-            Cooked
-          </Button>
-          <Rate
-            value={recipe.rating}
-            // onChange={(rating) =>
-            //   handleUpdate(
-            //     "rating",
-            //     recipe.unique_id,
-            //     rating,
-            //     updaterecipe
-            //   )
-            // }
-          />
-        </div>
-        <Text style={{ color: "rgba(0, 0, 0, 0.6)" }}>
-          <strong>Saved On: </strong>
-          {moment(recipe.timestamp).format("MMMM Do YYYY")}
-        </Text>
-      </Content>
-      <Content style={{ padding: " 0 1.2em 1.2em 1.2em" }}>
-        <div className="drawer-div">
-          <div className="drawer-div-actions">
-            <Dropdown menu={menuProps}>
-              <Button>
-                <Space>Options</Space>
-              </Button>
-            </Dropdown>
-            {/* <Radio.Group style={{ width: "100%", textAlign: "center" }}>
+            <Row className="w-full">
+              <Col className="w-full relative">
+                <Button
+                  className="absolute top-[5px] left-[5px] flex justify-center items-center bg-white"
+                  shape="circle"
+                  onClick={() => navigate("/catalog")}
+                >
+                  <ArrowLeftOutlined />
+                </Button>
+                {/* <div className="recipe-div"> */}
+                {/* <div className="recipe-div-actions"> */}
+
+                {/* <Radio.Group style={{ width: "100%", textAlign: "center" }}>
               <Popconfirm
                 key="delete"
                 icon={<QuestionCircleOutlined style={{ color: "red" }} />}
@@ -181,237 +229,282 @@ const Recipe = () => {
                 <EditOutlined key="edit" />
               </Radio.Button>
             </Radio.Group> */}
-          </div>
-          <img
-            src={
-              recipe.img_src
-                ? recipe.img_src
-                : "./static/graphics/default_image.jpg"
-            }
-          />
-        </div>
-        <div className="drawer-div">
-          {recipe.url.length ? (
-            <Link href={recipe.url} target="_blank">
-              <Button
-                className="btn-active"
-                type="primary"
-                block
-                style={{ marginTop: "15px" }}
-                danger
-              >
-                Visit Recipe Webpage
-              </Button>
-            </Link>
-          ) : null}
-        </div>
-        <Tabs
-          defaultActiveKey="1"
-          onChange={changeTab}
-          items={[
-            {
-              label: `Description`,
-              key: "1",
-              children: (
-                <div className="drawer-div">
-                  <p>
-                    {recipe.description ? (
-                      recipe.description
-                    ) : (
-                      <em>There is no description for this</em>
-                    )}
-                  </p>
-                </div>
-              ),
-            },
-            {
-              label: `Tags/Notes`,
-              key: "2",
-              children: (
-                <>
-                  <Divider orientation="left">
-                    <strong>
-                      <em>Tagged As:</em>
-                    </strong>
-                  </Divider>
-                  {recipe.tags.length > 0 ? (
-                    recipe.tags.map((tag, index) => {
-                      return (
-                        <Tag
-                          color="#d32f2f"
-                          key={uuidv4()}
-                          className="edit-tag tag-input"
-                        >
-                          {titleCase(tag)}
-                        </Tag>
-                      );
-                    })
-                  ) : (
-                    <p>
-                      <em>This recipe has not been tagged yet</em>
-                    </p>
-                  )}
-                  {/* {inputVisible && (
-                  <Form
-                    name="new-tag-form"
-                    form={tagForm}
-                    id="new-tag-form"
-                    onFinish={(value) => (
-                      value.newTag
-                        ? handleInputConfirm(value.newTag.trim())
-                        : null,
-                      tagForm.resetFields()
-                    )}
-                  >
-                    <Form.Item name="newTag">
-                      <Input
-                        type="text"
-                        size="small"
-                        className="tag-input"
-                        placeholder="Add a new tag"
-                      />
-                    </Form.Item>
-                    <Form.Item>
-                      <Button
-                        className="btn-active"
-                        htmlType="submit"
-                        type="primary"
-                      >
-                        Add
-                      </Button>
-                    </Form.Item>
-                  </Form>
-                )} */}
-                  {/* {!inputVisible && (
-                  <div id="new-tag-div">
-                    <Tag
-                      className="site-tag-plus"
-                      style={{ border: "1px dashed #d32f2f" }}
-                      onClick={showInput}
-                    >
-                      <PlusOutlined /> New Tag
-                    </Tag>
-                  </div>
-                )} */}
-                  <Divider orientation="left">
-                    <strong>
-                      <em>Notes:</em>
-                    </strong>
-                  </Divider>
-                  <Form
-                    name="new-notes-form"
-                    // form={noteForm}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: "20px",
-                    }}
-                    autoComplete="off"
-                    // onFinish={(value) => (
-                    //   handleUpdate(
-                    //     "notes_add",
-                    //     recipe.unique_id,
-                    //     value.newNote.trim(),
-                    //     updaterecipe
-                    //   ),
-                    //   noteForm.resetFields()
-                    // )}
-                  >
-                    <Form.Item name="newNote" style={{ width: "100%" }}>
-                      <Input.TextArea
-                        id="new-note-textarea"
-                        placeholder="Add a new note"
-                        allowClear
-                        autoSize
-                      />
-                    </Form.Item>
-                    <Form.Item>
-                      <Button
-                        id="new-note-button"
-                        className="btn-active"
-                        htmlType="submit"
-                        type="primary"
-                        style={{ height: "100%" }}
-                      >
-                        Add
-                      </Button>
-                    </Form.Item>
-                  </Form>
-                  <Timeline>
-                    {recipe.notes.length > 0 ? (
-                      recipe.notes.map((note) => {
-                        return (
-                          <Timeline.Item color="#d32f2f" key={uuidv4()}>
-                            {note}
-                          </Timeline.Item>
-                        );
-                      })
-                    ) : (
-                      <Timeline.Item color="#d32f2f">
-                        <em>This recipe has no notes yet</em>
-                      </Timeline.Item>
-                    )}
-                  </Timeline>
-                </>
-              ),
-            },
-            {
-              label: `Recipe`,
-              key: "3",
-              children: (
-                <>
-                  <Divider orientation="left">
-                    <strong>
-                      <em>Ingredients:</em>
-                    </strong>
-                  </Divider>
-                  <Timeline>
-                    {recipe.ingredients.length > 0 ? (
-                      recipe.ingredients.split("\n").map((ingredient) => {
-                        return (
-                          <Timeline.Item color="#d32f2f" key={uuidv4()}>
-                            {ingredient}
-                          </Timeline.Item>
-                        );
-                      })
-                    ) : (
-                      <Timeline.Item color="#d32f2f">
-                        <em>This recipe has no ingredients assigned to it</em>
-                      </Timeline.Item>
-                    )}
-                  </Timeline>
-                  <Divider orientation="left">
-                    <strong>
-                      <em>Steps:</em>
-                    </strong>
-                  </Divider>
-                  <Timeline>
-                    {recipe.steps.length > 0 ? (
-                      recipe.steps.split("\n").map((step) => {
-                        return (
-                          <Timeline.Item color="#d32f2f" key={uuidv4()}>
-                            {step}
-                          </Timeline.Item>
-                        );
-                      })
-                    ) : (
-                      <Timeline.Item color="#d32f2f">
-                        <em>This recipe has no steps assigned to it</em>
-                      </Timeline.Item>
-                    )}
-                  </Timeline>
-                </>
-              ),
-            },
-          ]}
-        />
+                {/* </div> */}
+                <img
+                  className="w-full max-w-full max-h-[550px] object-center object-cover"
+                  src={
+                    recipe.img_src
+                      ? recipe.img_src
+                      : "./static/graphics/default_image.jpg"
+                  }
+                />
+                <div className="absolute top-[40%] bottom-0 inset-0 bg-gradient-to-b from-transparent to-[#f5f5f5]"></div>
+                {/* </div> */}
+              </Col>
+            </Row>
+            <Row className="w-full -mt-10">
+              <Col span={20} offset={2}>
+                <Title level={3} className="text-center mb-0">
+                  {recipe.title}
+                </Title>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Text>
+                  <strong>Author: </strong>
+                  <em>
+                    {recipe.author ? recipe.author : "No Assigned Author"}
+                  </em>
+                </Text>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="flex flex-center gap-5">
+                <Button
+                  type={recipe.has_made ? "primary" : "default"}
+                  className={recipe.has_made ? "btn-active mt-px" : "btn mt-px"}
+                  onClick={(e) =>
+                    patch_Recipe(
+                      recipe.id,
+                      { has_made: !recipe.has_made },
+                      dispatch,
+                      displayMessage
+                    )
+                  }
+                  danger
+                  shape="circle"
+                >
+                  <CheckOutlined />
+                </Button>
+                <Rate
+                  value={recipe.rating}
+                  onChange={(rating) =>
+                    patch_Recipe(
+                      recipe.id,
+                      { rating: rating },
+                      dispatch,
+                      displayMessage
+                    )
+                  }
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Text className="text-gray-500">
+                  <small>
+                    <strong>Saved On: </strong>
+                    {moment(recipe.timestamp).format("MMMM Do YYYY")}
+                  </small>
+                </Text>
+              </Col>
+            </Row>
+            {/* <div className="recipe-div"> */}
+            <Row
+              className="w-full max-w-[825px]"
+              gutter={[16, 16]}
+              style={{
+                padding: "0 calc(8px + 1.5625vw)",
+              }}
+            >
+              <Col span={20} className="!pl-0">
+                {recipe.url.length ? (
+                  <Link href={recipe.url} target="_blank" className="w-full">
+                    <Button className="btn-active" type="primary" block danger>
+                      Visit Recipe Webpage <LinkOutlined />
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button className="w-full btn" block danger disabled>
+                    Visit Recipe Webpage <LinkOutlined />
+                  </Button>
+                )}
+              </Col>
+              <Col span={4} className="!pr-0">
+                <Dropdown menu={menuProps}>
+                  <Button className="w-full">
+                    <SettingOutlined />
+                  </Button>
+                </Dropdown>
+              </Col>
+            </Row>
+            {/* </div> */}
+            <Row
+              className="w-full"
+              style={{
+                padding: "0 calc(8px + 1.5625vw)",
+              }}
+            >
+              <Col span={24}>
+                <Tabs
+                  defaultActiveKey="1"
+                  onChange={changeTab}
+                  items={[
+                    {
+                      label: `Description`,
+                      key: "1",
+                      children: recipe.description ? (
+                        recipe.description.split("\n").map((paragraph) => {
+                          if (paragraph.length) {
+                            return (
+                              <Paragraph key={uuidv4()}>{paragraph}</Paragraph>
+                            );
+                          }
+                        })
+                      ) : (
+                        <Text italic>There is no description for this</Text>
+                      ),
+                    },
+                    {
+                      label: `Tags/Notes`,
+                      key: "2",
+                      children: (
+                        <>
+                          <Divider orientation="left">
+                            <Text strong italic>
+                              Tagged As:
+                            </Text>
+                          </Divider>
+                          {recipe.tags.length > 0 ? (
+                            recipe.tags.map((tag) => {
+                              return (
+                                <Tag
+                                  color="#d32f2f"
+                                  key={uuidv4()}
+                                  className="w-fit mr-2 mb-1 align-top"
+                                >
+                                  {titleCase(tag)}
+                                </Tag>
+                              );
+                            })
+                          ) : (
+                            <p>
+                              <em>This recipe has not been tagged yet</em>
+                            </p>
+                          )}
+                          {inputVisible && (
+                            <Form
+                              name="new-tag-form"
+                              form={tagForm}
+                              className="flex"
+                              onFinish={(value) => (
+                                value.newTag
+                                  ? handleInputConfirm(value.newTag.trim())
+                                  : null,
+                                tagForm.resetFields()
+                              )}
+                            >
+                              <Form.Item name="newTag">
+                                <Input
+                                  type="text"
+                                  size="small"
+                                  className="mt-1 mr-0 rounded-r-none"
+                                  placeholder="Add a new tag"
+                                />
+                              </Form.Item>
+                              <Form.Item>
+                                <Button
+                                  className="btn-active mt-1 h-[24px] py-0 px-2.5 rounded-l-none"
+                                  htmlType="submit"
+                                  type="primary"
+                                  disabled={tagFormValue ? false : true}
+                                >
+                                  Add
+                                </Button>
+                              </Form.Item>
+                            </Form>
+                          )}
+                          {!inputVisible && (
+                            <div>
+                              <Tag
+                                className="my-1 border border-dashed border-[#d32f2f]"
+                                onClick={showInput}
+                              >
+                                <PlusOutlined /> New Tag
+                              </Tag>
+                            </div>
+                          )}
+                          <Divider orientation="left">
+                            <Text strong italic>
+                              Notes:
+                            </Text>
+                          </Divider>
+                          <Form
+                            className="flex flex-between mb-5"
+                            name="new-notes-form"
+                            form={noteForm}
+                            autoComplete="off"
+                            onFinish={(value) => addNote(value.newNote)}
+                          >
+                            <Form.Item className="w-full" name="newNote">
+                              <Input.TextArea
+                                className="rounded-r-none"
+                                placeholder="Add a new note"
+                                allowClear
+                                autoSize
+                              />
+                            </Form.Item>
+                            <Form.Item>
+                              <Button
+                                className="h-full btn-active rounded-l-none"
+                                htmlType="submit"
+                                type="primary"
+                                disabled={noteFormValue ? false : true}
+                              >
+                                Add
+                              </Button>
+                            </Form.Item>
+                          </Form>
+                          <Timeline>
+                            {recipe.notes.length > 0 ? (
+                              recipe.notes.map((note) => {
+                                return (
+                                  <Timeline.Item color="#d32f2f" key={uuidv4()}>
+                                    <Text>{note}</Text>
+                                  </Timeline.Item>
+                                );
+                              })
+                            ) : (
+                              <Timeline.Item color="#d32f2f">
+                                <Text italic>This recipe has no notes yet</Text>
+                              </Timeline.Item>
+                            )}
+                          </Timeline>
+                        </>
+                      ),
+                    },
+                    {
+                      label: `Recipe`,
+                      key: "3",
+                      children: (
+                        <>
+                          <Divider orientation="left" orientationMargin="0">
+                            <Title level={5}>Ingredients:</Title>
+                          </Divider>
+                          {generateTimeline(recipe.ingredients, "ingredients")}
+                          <Divider orientation="left" orientationMargin="0">
+                            <Title level={5}>Steps:</Title>
+                          </Divider>
+                          {generateTimeline(recipe.steps, "steps")}
+                        </>
+                      ),
+                    },
+                  ]}
+                />
+              </Col>
+            </Row>
+          </Col>
+        </Row>
       </Content>
     </Layout>
   ) : (
-    <Space direction="vertical" style={{ width: "100%", marginTop: "50px" }}>
-      <Spin tip="Loading" size="large" />
+    <Space direction="vertical" className="w-full mt-[50px] mb-[15px]">
+      <Spin tip="Loading" size="large">
+        <div className="content" />
+      </Spin>
     </Space>
   );
-};
+});
 
-export default requireAuth(Recipe);
+export default Recipe;

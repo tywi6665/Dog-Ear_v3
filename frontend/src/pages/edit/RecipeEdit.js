@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
-import requireAuth from "../../utils/RequireAuth";
+import RequireAuth from "../../utils/RequireAuth";
 import { v4 as uuidv4 } from "uuid";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { update_Recipe } from "./RecipeEditActions";
-import { titleCase, titleCaseArr } from "../../utils";
 import {
+  flattenIntoString,
+  parseIngredients,
+  titleCase,
+  titleCaseArr,
+} from "../../utils";
+import {
+  Layout,
   Space,
   Button,
   Checkbox,
@@ -15,11 +21,10 @@ import {
   Rate,
   Tooltip,
   Spin,
-  message,
 } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
-const RecipeEdit = () => {
-  const [messageApi, contextHolder] = message.useMessage();
+const RecipeEdit = RequireAuth(({ displayMessage }) => {
   const recipe = useSelector((state) => state.recipe.recipe);
   const tagOptions = [
     ...useSelector((state) => state.catalog.searchOptions.tags),
@@ -35,10 +40,13 @@ const RecipeEdit = () => {
   const [allNotes, setAllNotes] = useState(recipe.notes);
   const [hasMade, setHasMade] = useState(recipe.has_made);
   const [rating, setRating] = useState(recipe.rating);
-  const [ingredients, setIngredients] = useState(recipe.ingredients);
-  const [steps, setSteps] = useState(recipe.steps);
+  const [ingredients, setIngredients] = useState(
+    flattenIntoString(recipe.ingredients)
+  );
+  const [steps, setSteps] = useState(flattenIntoString(recipe.steps));
 
   const [form] = Form.useForm();
+  const { Content } = Layout;
   const { TextArea } = Input;
 
   useEffect(() => {
@@ -56,14 +64,6 @@ const RecipeEdit = () => {
       steps: steps,
     });
   }, [recipe]);
-
-  const displayMessage = (message, type) => {
-    messageApi.open({
-      type: type,
-      content: message,
-      duration: 3,
-    });
-  };
 
   const updateRecipe = () => {
     let notes = [...allNotes];
@@ -86,42 +86,42 @@ const RecipeEdit = () => {
       notes: allNotes,
       has_made: hasMade,
       rating: rating,
-      ingredients: ingredients,
-      steps: steps,
+      ingredients: parseIngredients(ingredients),
+      steps: parseIngredients(steps),
     };
 
     update_Recipe(recipe.id, updatedRecipe, navigate, displayMessage);
   };
 
   return Object.keys(recipe).length ? (
-    <Space
+    <Content
       id="recipe-edit"
-      direction="vertical"
-      size="small"
-      style={{ display: "flex", width: "100%" }}
+      className="w-full !pt-0 !pb-[45px] mt-[15px] flex flex-col items-center justify-center"
     >
-      {contextHolder}
       <Button
-        className="btn-active"
+        className="btn-active mb-2.5"
         type="primary"
         block
-        style={{ marginBottom: "10px" }}
         danger
-        onClick={() => navigate(`/catalog/recipe/${recipe.id}`)}
+        onClick={() => navigate(-1, { replace: true })}
       >
-        Cancel
+        <ArrowLeftOutlined /> Cancel
       </Button>
       {imgSrc ? (
-        <img src={imgSrc} style={{ maxWidth: "225px", maxHeight: "225px" }} />
+        <img
+          className="w-[225px] h-[225px] max-w-[225px] max-h-[255px] mt-0 mb-[15px] mx-auto object-cover rounded-lg"
+          src={imgSrc}
+        />
       ) : (
-        <img src={"./static/graphics/default_image.jpg"} />
+        <img
+          className="w-[225px] h-[225px] max-w-[225px] max-h-[255px] mt-0 mb-[15px] mx-auto object-cover rounded-lg"
+          src={"./static/graphics/default_image.jpg"}
+        />
       )}
       <Form
+        className="w-full"
         name="form"
         form={form}
-        style={{
-          width: "100%",
-        }}
         labelCol={{ flex: "100px" }}
         labelAlign="left"
         labelWrap
@@ -140,21 +140,24 @@ const RecipeEdit = () => {
         </Form.Item>
 
         <Form.Item
+          className="mb-[15px]"
           // disabled={isUploading}
           label="Recipe Image"
-          style={{ marginBottom: "15px" }}
         >
-          <Input
-            value={imgSrc}
-            onChange={(e) => setImgSrc(e.target.value)}
-            placeholder='Right click on image, and click "copy image address". Paste address here.'
-          />
+          <Tooltip
+            color="#d32f2f"
+            trigger={["focus"]}
+            title='Right click on image, and click "copy image address". Paste address here.'
+            placement="top"
+          >
+            <Input value={imgSrc} onChange={(e) => setImgSrc(e.target.value)} />
+          </Tooltip>
         </Form.Item>
 
-        <div style={{ display: "flex", alignItems: "baseline" }}>
+        <div className="flex items-baseline">
           <Form.Item name="hasMade" wrapperCol={{ span: 24 }}>
             <Checkbox
-              style={{ marginRight: "15px" }}
+              className="mr-[15px]"
               checked={hasMade}
               onClick={() => setHasMade(!hasMade)}
             >
@@ -205,6 +208,7 @@ const RecipeEdit = () => {
 
         <Form.Item label="Recipe Notes" name="notes">
           <Tooltip
+            color="#d32f2f"
             trigger={["focus"]}
             title="Delimit separate notes with ; "
             placement="top"
@@ -213,34 +217,34 @@ const RecipeEdit = () => {
               value={allNotes.join(";")}
               onChange={(e) => setAllNotes(e.target.value.split(";"))}
               autoSize
+              allowClear
             />
           </Tooltip>
         </Form.Item>
 
         <Form.Item label="Recipe Ingredients" name="ingredients">
           <Tooltip
+            color="#d32f2f"
             trigger={["focus"]}
-            title="Each ingredient needs to be on a new line"
+            title='Please include a "--" before each heading. Each ingredient and heading needs to be on a new line.'
             placement="top"
           >
             <TextArea
               value={ingredients}
               onChange={(e) => setIngredients(e.target.value)}
               autoSize={{ minRows: 3, maxRows: 5 }}
+              allowClear
             />
           </Tooltip>
         </Form.Item>
 
         <Form.Item label="Recipe Steps" name="steps">
-          <Tooltip
-            trigger={["focus"]}
-            // title="Each paragraph needs to have an empty line separating them"
-            placement="top"
-          >
+          <Tooltip trigger={["focus"]} placement="top">
             <TextArea
               value={steps}
               onChange={(e) => setSteps(e.target.value)}
               autoSize={{ minRows: 3, maxRows: 5 }}
+              allowClear
             />
           </Tooltip>
         </Form.Item>
@@ -259,12 +263,14 @@ const RecipeEdit = () => {
           </Button>
         </Form.Item>
       </Form>
-    </Space>
+    </Content>
   ) : (
-    <Space direction="vertical" style={{ width: "100%", marginTop: "50px" }}>
-      <Spin tip="Loading" size="large" />
+    <Space className="w-full mt-[50px] mb-[15px]" direction="vertical">
+      <Spin tip="Loading" size="large">
+        <div className="content" />
+      </Spin>
     </Space>
   );
-};
+});
 
-export default requireAuth(RecipeEdit);
+export default RecipeEdit;

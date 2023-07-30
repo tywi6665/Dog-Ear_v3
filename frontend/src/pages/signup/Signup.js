@@ -1,151 +1,189 @@
-import React from "react";
-import { Layout, Button, Form, Input, Typography, message } from "antd";
+import React, { useState } from "react";
+import { Layout, Button, Form, Input, Typography, Result } from "antd";
 import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import { signupNewUser } from "./SignupAction";
+import { useNavigate } from "react-router-dom";
 
-const Signup = () => {
-  // const [username, setUsername] = useState("");
-  // const [password, setPassword] = useState("");
+const Signup = ({ dispatch, displayMessage, destroyMessage }) => {
+  const [status, setStatus] = useState("");
+
   const [loginForm] = Form.useForm();
   const { Content } = Layout;
-  const { Title, Text } = Typography;
-  const [messageApi, contextHolder] = message.useMessage();
-  const dispatch = useDispatch();
-
-  // const usernameError = useSelector((state) => state.signup.usernameError);
-  // const passwordError = useSelector((state) => state.signup.passwordError);
-
-  // useEffect(() => {
-  //   if (usernameError.length) {
-  //     displayMessage(usernameError, "error");
-  //   }
-  //   if (passwordError.length) {
-  //     passwordError.forEach((error) => displayMessage(error, "error"));
-  //   }
-  // }, [usernameError, passwordError]);
+  const { Title, Paragraph } = Typography;
+  const navigate = useNavigate();
 
   const onFinish = (userData) => {
     console.log(userData);
-    messageApi.destroy();
-    signupNewUser(userData, dispatch, displayMessage);
-    //   loginForm.resetFields();
+    destroyMessage();
+    signupNewUser(userData, dispatch, navigate, displayMessage, setStatus);
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log("signup failed");
   };
 
-  const displayMessage = (message, type) => {
-    messageApi.open({
-      type: type,
-      content: message,
-      duration: 0,
-    });
+  const validateMessages = {
+    required: "${label} is required!",
+    types: {
+      email: "${label} is not a valid email!",
+      username: "${label} is not a valid username!",
+    },
   };
 
-  return (
-    <Layout id="layout" style={{ minHeight: "100%" }}>
-      {contextHolder}
-      <Content
-        style={{
-          display: "flex",
-          height: "100%",
-          alignItems: "center",
-          justifyContent: "center",
+  let errorMessage = (
+    <Result
+      status="error"
+      title="There was a problem creating your account."
+      extra={[
+        <Paragraph>
+          Please try again or contact service support for further help.
+        </Paragraph>,
+        <Button
+          type="primary"
+          onClick={() => setStatus("")}
+          className="btn-active"
+        >
+          Try Again
+        </Button>,
+      ]}
+    />
+  );
+
+  let successMessage = (
+    <Result
+      status="success"
+      title="Account Created Successfully!"
+      extra={[
+        <Paragraph>
+          We sent you an email with your activation link. Please check your
+          email.
+        </Paragraph>,
+        <Paragraph>
+          Please try again or contact us if you do not receive it within a few
+          minutes.
+        </Paragraph>,
+      ]}
+    />
+  );
+
+  let form = (
+    <Form
+      name="basic"
+      form={loginForm}
+      labelCol={{
+        span: 8,
+      }}
+      wrapperCol={{
+        span: 16,
+      }}
+      initialValues={{
+        remember: true,
+      }}
+      onFinish={(userData) => onFinish(userData)}
+      onFinishFailed={onFinishFailed}
+      autoComplete="off"
+      validateMessages={validateMessages}
+    >
+      <div className="h-[50px] flex justify-between mb-[25px]">
+        <Title className="m-[5px]" level={3}>
+          Make an Account
+        </Title>
+      </div>
+      <Form.Item
+        label="Username"
+        name="username"
+        rules={[
+          {
+            required: true,
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        name="first_name"
+        label="First Name"
+        rules={[
+          {
+            required: true,
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        name="last_name"
+        label="Last Name"
+        rules={[
+          {
+            required: true,
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        label="Email"
+        name="email"
+        rules={[
+          {
+            type: "email",
+            required: true,
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        label="Password"
+        name="password"
+        rules={[
+          {
+            required: true,
+          },
+        ]}
+      >
+        <Input.Password />
+      </Form.Item>
+
+      <Form.Item
+        wrapperCol={{
+          offset: 9,
+          span: 16,
         }}
       >
-        <Form
-          name="basic"
-          form={loginForm}
-          style={{
-            background: "#fff",
-            padding: "15px",
-            border: "1px solid rgba(5, 5, 5, 0.06)",
-            borderRadius: "8px",
-          }}
-          labelCol={{
-            span: 8,
-          }}
-          wrapperCol={{
-            span: 16,
-          }}
-          initialValues={{
-            remember: true,
-          }}
-          onFinish={(userData) => onFinish(userData)}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <div className="log-in-title">
-            <Title
-              level={3}
-              style={{
-                margin: "5px",
-              }}
-            >
-              Make an Account
-            </Title>
-          </div>
-          <Form.Item
-            label="Username"
-            name="username"
-            // value={username}
-            // onChange={(e) => setUsername(e.target.value)}
-            rules={[
-              {
-                required: true,
-                message: "Please input your username!",
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
+        <Button type="primary" htmlType="submit" className="btn-active">
+          Submit
+        </Button>
+      </Form.Item>
+      <Form.Item
+        className="mb-0"
+        wrapperCol={{
+          offset: 1,
+          span: 24,
+        }}
+      >
+        <Paragraph>
+          Already have account? <Link to="/login">Login</Link>
+        </Paragraph>
+      </Form.Item>
+    </Form>
+  );
 
-          <Form.Item
-            label="Password"
-            name="password"
-            // value={password}
-            // onChange={(e) => setPassword(e.target.value)}
-            rules={[
-              {
-                required: true,
-                message: "Please input your password!",
-              },
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
+  let message = "";
+  if (status === "error") {
+    message = errorMessage;
+  } else if (status === "success") {
+    message = successMessage;
+  }
 
-          <Form.Item
-            wrapperCol={{
-              offset: 9,
-              span: 16,
-            }}
-          >
-            <Button type="primary" htmlType="submit" className="btn-active">
-              Submit
-            </Button>
-          </Form.Item>
-          <Form.Item
-            style={{ marginBottom: 0 }}
-            wrapperCol={{
-              offset: 1,
-              span: 24,
-            }}
-          >
-            {/* <div style={{ display: "flex", flexDirection: "column" }}> */}
-            <Text>
-              Already have account? <Link to="/login">Login</Link>
-            </Text>
-            {/* <Text italic type="secondary">
-                Made by tywi
-              </Text>
-            </div> */}
-          </Form.Item>
-        </Form>
-      </Content>
-    </Layout>
+  return (
+    <Content className="h-full flex justify-center items-center fixed inset-0">
+      <div className="bg-white w-[300px] p-4 border border-solid border-neutral-200 rounded-lg">
+        {message}
+        {!status.length && form}
+      </div>
+    </Content>
   );
 };
 
